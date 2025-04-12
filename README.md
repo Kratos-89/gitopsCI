@@ -12,9 +12,8 @@ This repository implements **Continuous Integration (CI)** using **Jenkins**, en
 - **Artifact Management** – Stores and retrieves build artifacts for further deployment.
 - **Trigger Mechanism** – Builds are triggered automatically on code commits or manually via Jenkins UI.
 
-<div>
-<img width="1000" src="./images/gitOpsCIArchitecture.png" alt="Project Architecture">
-</div>
+
+![Project Architecture](./Images/gitOpsCIArchitecture.drawio.png)
 
 ## Repository Structure
 
