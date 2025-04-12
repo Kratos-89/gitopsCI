@@ -1,16 +1,21 @@
 # Continuous Integration with Jenkins
 
 ## Overview
+
 This repository implements **Continuous Integration (CI)** using **Jenkins**, ensuring automated builds, testing, and artifact management for applications before deployment.
 
 ## Workflow Architecture
+
 - **Jenkins Pipeline** – Automates code compilation, testing, and artifact generation.
 - **Build and Test Steps** – Runs unit tests and performs static code analysis.
 - **Docker Build & Push** – Containerizes the application and pushes images to a registry (Docker Hub, AWS ECR, etc.).
 - **Artifact Management** – Stores and retrieves build artifacts for further deployment.
 - **Trigger Mechanism** – Builds are triggered automatically on code commits or manually via Jenkins UI.
 
+![Architecture](images/gitOpsCIArchitecture.jpg "Project Architecture")
+
 ## Repository Structure
+
 ```
 📂 jenkins/
  ├── 📄 Jenkinsfile  # Jenkins pipeline definition
@@ -23,13 +28,16 @@ This repository implements **Continuous Integration (CI)** using **Jenkins**, en
 ```
 
 ## Prerequisites
+
 - Jenkins installed and configured
 - Docker installed for local testing
 - AWS, Docker Hub, or another container registry (if using Docker images)
 - Required Jenkins plugins: **Pipeline, Docker Pipeline, Git Plugin**
 
 ## Jenkins CI Pipeline
+
 ### Step 1: Define the Jenkinsfile (`jenkins/Jenkinsfile`)
+
 ```groovy
 pipeline{
   agent any
@@ -45,11 +53,11 @@ pipeline{
   }
 
   tools{
-    maven 'maven3' 
+    maven 'maven3'
     //maven is installed as tool and the local machine doesn't have maven, so we need configure the maven tool with the specific version and name maven3
   }
   stages{
-    
+
     stage('Clean the workspace'){
       //This will clean the workspace to avoid any issues.
       steps{
@@ -73,7 +81,7 @@ pipeline{
 
     stage('Test Compiled Code'){
       steps{
-        sh "mvn test -DskipTests=true" 
+        sh "mvn test -DskipTests=true"
         //Here the test cases are skipped because the java code has some issues.
       }
     }
@@ -95,9 +103,9 @@ pipeline{
         //specify the correct name of the sonarqube server added into jenkins.
         sh ''' $SCANNER_HOME/bin/sonar-scanner  -Dsonar.project=bankapp -Dsonar.projectKey=bank -Dsonar.java.binaries=target'''
         //This command gets into sonarQube server and executes the sonarqube-scanner executable.
-        //  -Dsonar.project=bankapp \      # Project name in SonarQube UI  
-        //  -Dsonar.projectKey=bank \      # Unique ID for the project  
-        //  -Dsonar.java.binaries=target   # Path to compiled Java binaries (.class files) 
+        //  -Dsonar.project=bankapp \      # Project name in SonarQube UI
+        //  -Dsonar.projectKey=bank \      # Unique ID for the project
+        //  -Dsonar.java.binaries=target   # Path to compiled Java binaries (.class files)
       }
       }
     }
@@ -121,7 +129,7 @@ pipeline{
           //Use pipeline syntax "withDockerRegistry:"
           withDockerRegistry(credentialsId: 'doc-cred'){
             sh "docker build -t docravin/gitopsbankapp:${params.DOCKER_TAG} ."
-            //Builds the docker image from the files in the '.'(current directory) and pushes to our docker hub. 
+            //Builds the docker image from the files in the '.'(current directory) and pushes to our docker hub.
           }
         }
       }
@@ -130,7 +138,7 @@ pipeline{
     stage('Docker Image Scan'){
       steps{
         //To scan the generated docker image.
-        sh "trivy image --format=table -o dimage.html"  
+        sh "trivy image --format=table -o dimage.html"
       }
     }
 
@@ -146,7 +154,7 @@ pipeline{
 
     //Before this stage add the access token of gitopsCD repo.
     stage('Update the YAML files in the gitopsCD Repo'){
-      //The purpose of this stage is to update the docker image's latest tag in the deployment file of the app. 
+      //The purpose of this stage is to update the docker image's latest tag in the deployment file of the app.
       steps{
         script{
           withCredentials([gitUsernamePassword(credentialsId: 'git-cred', gitToolName : 'Default')]){
@@ -155,7 +163,7 @@ pipeline{
             git clone https://github.com/Kratos-89/gitops-CD.git
             cd gitops-CD
 
-            #List files 
+            #List files
             ls -l bankapp
 
             #Get the absolute path
@@ -165,9 +173,9 @@ pipeline{
             sed -i "s|image: docravin/gitopsbankapp:.*|image: docravin/gitopsbankapp:${DOCKER_TAG}|" ${repo_dir}/bankapp/bankapp.yaml
             '''
             //The tag changes are stored locally.
-            
+
             //Confirm the change
-            sh ''' 
+            sh '''
             echo "Updated the deployment file"
             cat gitops-CD/bankapp/bankapp.yaml
             '''
@@ -176,7 +184,7 @@ pipeline{
             sh '''
             cd gitops-CD
             git config user.email "jenkins@cicd.com"
-            git config user.name "jenkins" 
+            git config user.name "jenkins"
             '''
 
             // Commit and push the updated file.
@@ -184,19 +192,20 @@ pipeline{
               cd gitops-CD
               ls
               git add bankapp/bankapp.yaml
-              git commit -m "Updated the image tag to ${Docker_TAG}" 
+              git commit -m "Updated the image tag to ${Docker_TAG}"
               git push origin main
             '''
           }
         }
       }
     }
-    
+
   }
 }
 ```
 
 ### Step 2: Configure Jenkins Pipeline Job
+
 1. Open Jenkins dashboard and create a **New Item**.
 2. Select **Pipeline** and provide a project name.
 3. Under **Pipeline Definition**, select **Pipeline Script from SCM**.
@@ -205,15 +214,19 @@ pipeline{
 6. Save and trigger the build.
 
 ### Step 3: Monitor Pipeline Execution
+
 View the pipeline execution in Jenkins UI or check logs via:
+
 ```bash
 jenkins-cli console -s http://your-jenkins-url
 ```
 
 ### Step 4: Download Artifacts (If Needed)
+
 Artifacts from the CI run can be retrieved from Jenkins.
 
 ## Key Features
+
 ✔ **Automated Build and Test** – Ensures code quality and reliability.
 
 ✔ **Dockerized Workflows** – Supports containerized application builds.
@@ -221,5 +234,3 @@ Artifacts from the CI run can be retrieved from Jenkins.
 ✔ **Artifact Management** – Efficient storage and retrieval of compiled binaries.
 
 ✔ **Integration with CD Pipelines** – Can be extended to trigger ArgoCD deployments.
-
-
