@@ -24,7 +24,7 @@ pipeline {
     }
 
     stage('Git Checkout') {
-      //Use the pipeline syntax git, add the url, brach and the credentials to generate the below code.
+      //Use the pipeline syntax git, add the url, branch and the credentials to generate the below code.
       steps {
           git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/Kratos-89/gitopsCI.git'
       }
