@@ -1,3 +1,24 @@
+# Project Infos
+
+- **Kubernetes cluster version:** v1.32
+- **Instances:**
+  - Jenkins: t3.medium
+  - SonarQube: t3.medium
+  - NexusServer: t3.medium
+- **Build Time:** ~72 seconds
+- **Docker image name:** eclipse-temurim:17-jdk-alphine
+
+# Ports
+- SonarQube: 9000
+- Jenkins: 8080
+- Nexus Server: 8081
+
+# Tools & Versions
+- Terraform: v1.11.3
+- Trivy: 0.61.0
+- Docker: 28.0.2
+- Kubectl: v1.32.3
+
 # Continuous Integration with Jenkins
 
 ## Overview
