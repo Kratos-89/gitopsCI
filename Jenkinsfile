@@ -8,7 +8,7 @@ pipeline {
 
   environment {
     SCANNER_HOME = tool 'Sonar-Scanner' //Configure the sonarqube server into the system section of jenkins.
-  //This actually points to the sonarqube server default shell path.
+  //This actually points to the sonarqube server sonar scanner executable file to run the scan.
   }
 
   tools {
